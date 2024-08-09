@@ -117,6 +117,10 @@ function verifyNodeHasMismatchInfo(doc: Document, selector = 'app'): void {
   expect(readHydrationInfo(doc.querySelector(selector)!)?.status).toBe(HydrationStatus.Mismatched);
 }
 
+function verifyNodeHasSkipHydrationMarker(element: HTMLElement): void {
+  expect(readHydrationInfo(element)?.status).toBe(HydrationStatus.Skipped);
+}
+
 /** Checks whether a given element is a <script> that contains transfer state data. */
 function isTransferStateScript(el: HTMLElement): boolean {
   return (
@@ -2744,6 +2748,97 @@ describe('platform-server hydration integration', () => {
           const clientContents = stripExcessiveSpaces(clientRootNode.innerHTML);
           expect(clientContents).toBe('<ol><li>1</li><li>2</li><li>3</li><!--container--></ol>');
         });
+
+        describe('with ngSkipHydration', () => {
+          it('should skip hydration when ngSkipHydration and i18n attributes are present on a same node', async () => {
+            loadTranslations({
+              [computeMsgId(' Some {$START_TAG_STRONG}strong{$CLOSE_TAG_STRONG} content ')]:
+                'Some normal content',
+            });
+
+            @Component({
+              standalone: true,
+              selector: 'cmp-a',
+              template: `<ng-content />`,
+            })
+            class CmpA {}
+
+            @Component({
+              standalone: true,
+              selector: 'app',
+              imports: [CmpA],
+              template: `
+                <cmp-a i18n ngSkipHydration>
+                  Some <strong>strong</strong> content
+                </cmp-a>
+              `,
+            })
+            class SimpleComponent {}
+
+            const hydrationFeatures = [withI18nSupport()] as unknown as HydrationFeature<any>[];
+            const html = await ssr(SimpleComponent, {hydrationFeatures});
+            const ssrContents = getAppContents(html);
+            expect(ssrContents).toContain('<app ngh');
+
+            resetTViewsFor(SimpleComponent);
+
+            const appRef = await renderAndHydrate(doc, html, SimpleComponent, {hydrationFeatures});
+            const compRef = getComponentRef<SimpleComponent>(appRef);
+            appRef.tick();
+
+            const clientRootNode = compRef.location.nativeElement;
+            verifyAllNodesClaimedForHydration(clientRootNode);
+            verifyClientAndSSRContentsMatch(ssrContents, clientRootNode);
+
+            const cmpA = clientRootNode.querySelector('cmp-a');
+            expect(cmpA.textContent).toBe('Some normal content');
+            verifyNodeHasSkipHydrationMarker(cmpA);
+          });
+
+          it('should skip hydration when i18n is inside of an ngSkipHydration block', async () => {
+            loadTranslations({
+              [computeMsgId('strong')]: 'very strong',
+            });
+
+            @Component({
+              standalone: true,
+              selector: 'cmp-a',
+              template: `<ng-content />`,
+            })
+            class CmpA {}
+
+            @Component({
+              standalone: true,
+              selector: 'app',
+              imports: [CmpA],
+              template: `
+                <cmp-a ngSkipHydration>
+                  Some <strong i18n>strong</strong> content
+                </cmp-a>
+              `,
+            })
+            class SimpleComponent {}
+
+            const hydrationFeatures = [withI18nSupport()] as unknown as HydrationFeature<any>[];
+            const html = await ssr(SimpleComponent, {hydrationFeatures});
+            const ssrContents = getAppContents(html);
+            expect(ssrContents).toContain('<app ngh');
+
+            resetTViewsFor(SimpleComponent);
+
+            const appRef = await renderAndHydrate(doc, html, SimpleComponent, {hydrationFeatures});
+            const compRef = getComponentRef<SimpleComponent>(appRef);
+            appRef.tick();
+
+            const clientRootNode = compRef.location.nativeElement;
+            verifyAllNodesClaimedForHydration(clientRootNode);
+            verifyClientAndSSRContentsMatch(ssrContents, clientRootNode);
+
+            const cmpA = clientRootNode.querySelector('cmp-a');
+            expect(cmpA.textContent.trim()).toBe('Some very strong content');
+            verifyNodeHasSkipHydrationMarker(cmpA);
+          });
+        });
       });
 
       // Note: hydration for i18n blocks is not *yet* fully supported, so the tests
@@ -4102,8 +4197,7 @@ describe('platform-server hydration integration', () => {
           el = inject(ElementRef);
 
           ngAfterViewInit() {
-            const pTag = document.querySelector('p');
-            pTag?.parentElement?.removeChild(pTag);
+            document.querySelector('p')?.remove();
             const span = document.createElement('span');
             span.innerHTML = 'Appended span';
             this.el.nativeElement.appendChild(span);
@@ -7643,6 +7737,72 @@ describe('platform-server hydration integration', () => {
         verifyClientAndSSRContentsMatch(ssrContents, clientRootNode);
         expect(clientRootNode.innerHTML).toContain(`<inner>${expectedContent}</inner>`);
       });
+
+      it('should handle let declaration before and directly inside of an embedded view', async () => {
+        @Component({
+          standalone: true,
+          selector: 'app',
+          template: `
+            @let before = 'before';
+            @if (true) {
+              @let inside = 'inside';
+              {{before}}|{{inside}}
+            }
+          `,
+        })
+        class SimpleComponent {}
+
+        const html = await ssr(SimpleComponent);
+        const ssrContents = getAppContents(html);
+
+        expect(ssrContents).toContain('<app ngh');
+        expect(ssrContents).toContain('before|inside');
+
+        resetTViewsFor(SimpleComponent);
+
+        const appRef = await renderAndHydrate(doc, html, SimpleComponent);
+        const compRef = getComponentRef<SimpleComponent>(appRef);
+        appRef.tick();
+
+        const clientRootNode = compRef.location.nativeElement;
+        verifyAllNodesClaimedForHydration(clientRootNode);
+        verifyClientAndSSRContentsMatch(ssrContents, clientRootNode);
+        expect(clientRootNode.textContent).toContain('before|inside');
+      });
+
+      it('should handle let declaration before, directly inside of and after an embedded view', async () => {
+        @Component({
+          standalone: true,
+          selector: 'app',
+          template: `
+            @let before = 'before';
+            @if (true) {
+              @let inside = 'inside';
+              {{inside}}
+            }
+            @let after = 'after';
+            {{before}}|{{after}}
+          `,
+        })
+        class SimpleComponent {}
+
+        const html = await ssr(SimpleComponent);
+        const ssrContents = getAppContents(html);
+
+        expect(ssrContents).toContain('<app ngh');
+        expect(ssrContents).toContain('inside <!--container--> before|after');
+
+        resetTViewsFor(SimpleComponent);
+
+        const appRef = await renderAndHydrate(doc, html, SimpleComponent);
+        const compRef = getComponentRef<SimpleComponent>(appRef);
+        appRef.tick();
+
+        const clientRootNode = compRef.location.nativeElement;
+        verifyAllNodesClaimedForHydration(clientRootNode);
+        verifyClientAndSSRContentsMatch(ssrContents, clientRootNode);
+        expect(clientRootNode.textContent).toContain('inside  before|after');
+      });
     });
 
     describe('Router', () => {
@@ -7705,6 +7865,70 @@ describe('platform-server hydration integration', () => {
 
         verifyAllNodesClaimedForHydration(clientRootNode);
         verifyClientAndSSRContentsMatch(ssrContents, clientRootNode);
+      });
+
+      it('should cleanup dehydrated views in routed components that use ViewContainerRef', async () => {
+        @Component({
+          standalone: true,
+          selector: 'cmp-a',
+          template: `
+            @if (isServer) {
+              <p>Server view</p>
+            } @else {
+              <p>Client view</p>
+            }
+          `,
+        })
+        class CmpA {
+          isServer = isPlatformServer(inject(PLATFORM_ID));
+          viewContainerRef = inject(ViewContainerRef);
+        }
+
+        const routes: Routes = [
+          {
+            path: '',
+            component: CmpA,
+          },
+        ];
+
+        @Component({
+          standalone: true,
+          selector: 'app',
+          imports: [RouterOutlet],
+          template: `
+            <router-outlet />
+          `,
+        })
+        class SimpleComponent {}
+
+        const envProviders = [
+          {provide: PlatformLocation, useClass: MockPlatformLocation},
+          provideRouter(routes),
+        ] as unknown as Provider[];
+        const html = await ssr(SimpleComponent, {envProviders});
+        const ssrContents = getAppContents(html);
+
+        expect(ssrContents).toContain(`<app ${NGH_ATTR_NAME}`);
+        expect(ssrContents).toContain('Server view');
+        expect(ssrContents).not.toContain('Client view');
+
+        resetTViewsFor(SimpleComponent, CmpA);
+
+        const appRef = await renderAndHydrate(doc, html, SimpleComponent, {envProviders});
+        const compRef = getComponentRef<SimpleComponent>(appRef);
+        appRef.tick();
+
+        await whenStable(appRef);
+
+        const clientRootNode = compRef.location.nativeElement;
+
+        // <p> tag is used in a view that is different on a server and
+        // on a client, so it gets re-created (not hydrated) on a client
+        const p = clientRootNode.querySelector('p');
+        verifyAllNodesClaimedForHydration(clientRootNode, [p]);
+
+        expect(clientRootNode.innerHTML).not.toContain('Server view');
+        expect(clientRootNode.innerHTML).toContain('Client view');
       });
     });
   });

@@ -10,9 +10,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  EnvironmentInjector,
+  afterNextRender,
   computed,
   effect,
   inject,
+  model,
   signal,
   viewChild,
 } from '@angular/core';
@@ -48,20 +51,32 @@ export const ALL_STATUSES_KEY = 'All';
 export default class ApiReferenceList {
   private readonly apiReferenceManager = inject(ApiReferenceManager);
   filterInput = viewChild.required(TextField, {read: ElementRef});
+  private readonly injector = inject(EnvironmentInjector);
 
   private readonly allGroups = this.apiReferenceManager.apiGroups;
 
-  private filterEffect = effect(() => {
-    if (matchMedia('(hover: hover) and (pointer:fine)').matches) {
-      // Lord forgive me for I have sinned
-      // Use the CVA to focus when https://github.com/angular/angular/issues/31133 is implemented
-      this.filterInput().nativeElement.querySelector('input').focus();
-    }
-  });
+  constructor() {
+    effect(() => {
+      const filterInput = this.filterInput();
+      afterNextRender(
+        {
+          write: () => {
+            // Lord forgive me for I have sinned
+            // Use the CVA to focus when https://github.com/angular/angular/issues/31133 is implemented
+            if (matchMedia('(hover: hover) and (pointer:fine)').matches) {
+              filterInput.nativeElement.querySelector('input').focus();
+            }
+          },
+        },
+        {injector: this.injector},
+      );
+    });
+  }
 
   query = signal('');
   includeDeprecated = signal(false);
-  type = signal(ALL_STATUSES_KEY);
+
+  type = model<string | undefined>(ALL_STATUSES_KEY);
 
   featuredGroup = this.apiReferenceManager.featuredGroup;
   filteredGroups = computed((): ApiItemsGroup[] => {
@@ -76,7 +91,9 @@ export default class ApiReferenceList {
               ? apiItem.title.toLocaleLowerCase().includes(this.query().toLocaleLowerCase())
               : true) &&
             (this.includeDeprecated() ? true : apiItem.isDeprecated === this.includeDeprecated()) &&
-            (this.type() === ALL_STATUSES_KEY || apiItem.itemType === this.type())
+            (this.type() === undefined ||
+              this.type() === ALL_STATUSES_KEY ||
+              apiItem.itemType === this.type())
           );
         }),
       }))
@@ -85,6 +102,6 @@ export default class ApiReferenceList {
   itemTypes = Object.values(ApiItemType);
 
   filterByItemType(itemType: ApiItemType): void {
-    this.type.set(this.type() === itemType ? ALL_STATUSES_KEY : itemType);
+    this.type.update((currentType) => (currentType === itemType ? ALL_STATUSES_KEY : itemType));
   }
 }

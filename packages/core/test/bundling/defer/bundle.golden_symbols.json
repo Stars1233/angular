@@ -207,9 +207,6 @@
     "name": "EventManagerPlugin"
   },
   {
-    "name": "EventType"
-  },
-  {
     "name": "GLOBAL_EVENT_DELEGATION"
   },
   {
@@ -552,9 +549,6 @@
     "name": "_getInsertInFrontOfRNodeWithI18n"
   },
   {
-    "name": "_global"
-  },
-  {
     "name": "_icuContainerIterate"
   },
   {
@@ -609,6 +603,9 @@
     "name": "allocLFrame"
   },
   {
+    "name": "angularZoneInstanceIdProperty"
+  },
+  {
     "name": "appendChild"
   },
   {
@@ -649,6 +646,9 @@
   },
   {
     "name": "bloomHasToken"
+  },
+  {
+    "name": "bootstrap"
   },
   {
     "name": "callHook"
@@ -1132,6 +1132,9 @@
   },
   {
     "name": "init_bindings"
+  },
+  {
+    "name": "init_bootstrap"
   },
   {
     "name": "init_bootstrap_app_scoped"
@@ -1815,6 +1818,9 @@
     "name": "init_platform_core_providers"
   },
   {
+    "name": "init_platform_destroy_listeners"
+  },
+  {
     "name": "init_platform_ref"
   },
   {
@@ -2151,6 +2157,12 @@
     "name": "invokeTriggerCleanupFns"
   },
   {
+    "name": "isAngularZoneProperty"
+  },
+  {
+    "name": "isApplicationBootstrapConfig"
+  },
+  {
     "name": "isComponentDef"
   },
   {
@@ -2280,16 +2292,13 @@
     "name": "nativeInsertBefore"
   },
   {
-    "name": "nativeParentNode"
-  },
-  {
     "name": "nextNgElementId"
   },
   {
     "name": "ngOnChangesSetInput"
   },
   {
-    "name": "ngZoneApplicationErrorHandlerFactory"
+    "name": "ngZoneInstanceId"
   },
   {
     "name": "nonNull"

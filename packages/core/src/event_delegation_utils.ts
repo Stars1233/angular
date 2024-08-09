@@ -46,7 +46,7 @@ export function setJSActionAttributes(nativeElement: Element, eventTypes: string
   nativeElement.setAttribute(Attribute.JSACTION, `${existingAttr ?? ''}${parts}`);
 }
 
-export const sharedStashFunction = (rEl: RElement, eventType: string, listenerFn: () => void) => {
+export const sharedStashFunction = (rEl: RElement, eventType: string, listenerFn: Function) => {
   const el = rEl as unknown as Element;
   const eventListenerMap = el.__jsaction_fns ?? new Map();
   const eventListeners = eventListenerMap.get(eventType) ?? [];
@@ -94,13 +94,24 @@ export class GlobalEventDelegation implements OnDestroy {
   }
 
   addEventListener(element: HTMLElement, eventType: string, handler: Function): Function {
-    this.eventContractDetails.instance!.addEvent(eventType);
-    getActionCache(element)[eventType] = '';
+    // Note: contrary to the type, Window and Document can be passed in
+    // as well.
+    if (element.nodeType === Node.ELEMENT_NODE) {
+      this.eventContractDetails.instance!.addEvent(eventType);
+      getActionCache(element)[eventType] = '';
+      sharedStashFunction(element, eventType, handler);
+    } else {
+      element.addEventListener(eventType, handler as EventListener);
+    }
     return () => this.removeEventListener(element, eventType, handler);
   }
 
   removeEventListener(element: HTMLElement, eventType: string, callback: Function): void {
-    getActionCache(element)[eventType] = undefined;
+    if (element.nodeType === Node.ELEMENT_NODE) {
+      getActionCache(element)[eventType] = undefined;
+    } else {
+      element.removeEventListener(eventType, callback as EventListener);
+    }
   }
 }
 
@@ -114,6 +125,6 @@ export const initGlobalEventDelegation = (
   const eventContract = (eventContractDetails.instance = new EventContract(
     new EventContractContainer(document.body),
   ));
-  const dispatcher = new EventDispatcher(invokeRegisteredListeners);
+  const dispatcher = new EventDispatcher(invokeRegisteredListeners, /** clickModSupport */ false);
   registerDispatcher(eventContract, dispatcher);
 };

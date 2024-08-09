@@ -137,6 +137,8 @@ export class ApplicationRef {
     tick(): void;
     get viewCount(): number;
     // (undocumented)
+    whenStable(): Promise<void>;
+    // (undocumented)
     static ɵfac: i0.ɵɵFactoryDeclaration<ApplicationRef, never>;
     // (undocumented)
     static ɵprov: i0.ɵɵInjectableDeclaration<ApplicationRef>;
@@ -174,6 +176,7 @@ export function booleanAttribute(value: unknown): boolean;
 
 // @public
 export interface BootstrapOptions {
+    // @deprecated
     ignoreChangesOutsideZone?: boolean;
     ngZone?: NgZone | 'zone.js' | 'noop';
     ngZoneEventCoalescing?: boolean;
@@ -1246,6 +1249,7 @@ export class NgZone {
 // @public
 export interface NgZoneOptions {
     eventCoalescing?: boolean;
+    // @deprecated
     ignoreChangesOutsideZone?: boolean;
     runCoalescing?: boolean;
 }

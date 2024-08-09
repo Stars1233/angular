@@ -549,9 +549,6 @@
     "name": "_getInsertInFrontOfRNodeWithI18n"
   },
   {
-    "name": "_global"
-  },
-  {
     "name": "_icuContainerIterate"
   },
   {
@@ -591,6 +588,9 @@
     "name": "allocLFrame"
   },
   {
+    "name": "angularZoneInstanceIdProperty"
+  },
+  {
     "name": "appendChild"
   },
   {
@@ -628,6 +628,9 @@
   },
   {
     "name": "bloomHasToken"
+  },
+  {
+    "name": "bootstrap"
   },
   {
     "name": "calcSerializedContainerSize"
@@ -769,9 +772,6 @@
   },
   {
     "name": "diPublicInInjector"
-  },
-  {
-    "name": "enableHydrationRuntimeSupport"
   },
   {
     "name": "enterDI"
@@ -1023,6 +1023,12 @@
     "name": "invokeHostBindingsInCreationMode"
   },
   {
+    "name": "isAngularZoneProperty"
+  },
+  {
+    "name": "isApplicationBootstrapConfig"
+  },
+  {
     "name": "isArrayLike"
   },
   {
@@ -1167,9 +1173,6 @@
     "name": "nativeInsertBefore"
   },
   {
-    "name": "nativeParentNode"
-  },
-  {
     "name": "nativeRemoveNode"
   },
   {
@@ -1179,7 +1182,7 @@
     "name": "ngOnChangesSetInput"
   },
   {
-    "name": "ngZoneApplicationErrorHandlerFactory"
+    "name": "ngZoneInstanceId"
   },
   {
     "name": "nonNull"
@@ -1396,6 +1399,9 @@
   },
   {
     "name": "whenStableStore"
+  },
+  {
+    "name": "withDomHydration"
   },
   {
     "name": "writeDirectClass"

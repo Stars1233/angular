@@ -282,6 +282,9 @@
     "name": "INPUT_BINDER"
   },
   {
+    "name": "INPUT_SIGNAL_NODE"
+  },
+  {
     "name": "INTERNAL_APPLICATION_ERROR_HANDLER"
   },
   {
@@ -564,7 +567,13 @@
     "name": "REMOVE_STYLES_ON_COMPONENT_DESTROY"
   },
   {
+    "name": "REQUIRED_UNSET_VALUE"
+  },
+  {
     "name": "ROUTER_CONFIGURATION"
+  },
+  {
+    "name": "ROUTER_OUTLET_DATA"
   },
   {
     "name": "ROUTER_PRELOADER"
@@ -649,6 +658,9 @@
   },
   {
     "name": "SIGNAL"
+  },
+  {
+    "name": "SIGNAL_NODE"
   },
   {
     "name": "SIMPLE_CHANGES_STORE"
@@ -879,6 +891,9 @@
     "name": "allowSanitizationBypassAndThrow"
   },
   {
+    "name": "angularZoneInstanceIdProperty"
+  },
+  {
     "name": "appendChild"
   },
   {
@@ -903,6 +918,9 @@
     "name": "assertConsumerNode"
   },
   {
+    "name": "assertProducerNode"
+  },
+  {
     "name": "attachPatchData"
   },
   {
@@ -919,6 +937,9 @@
   },
   {
     "name": "booleanAttribute"
+  },
+  {
+    "name": "bootstrap"
   },
   {
     "name": "callHook"
@@ -987,6 +1008,9 @@
     "name": "consumerIsLive"
   },
   {
+    "name": "consumerMarkDirty"
+  },
+  {
     "name": "consumerPollProducersForChange"
   },
   {
@@ -1038,6 +1062,9 @@
     "name": "createInjectorWithoutInjectorInstances"
   },
   {
+    "name": "createInputSignal"
+  },
+  {
     "name": "createInvalidObservableTypeError"
   },
   {
@@ -1063,6 +1090,9 @@
   },
   {
     "name": "createOperatorSubscriber"
+  },
+  {
+    "name": "createOrReusePlatformInjector"
   },
   {
     "name": "createResultForNode"
@@ -1096,6 +1126,9 @@
   },
   {
     "name": "deepForEachProvider"
+  },
+  {
+    "name": "defaultEquals"
   },
   {
     "name": "defaultErrorFactory"
@@ -1488,6 +1521,9 @@
     "name": "importProvidersFrom"
   },
   {
+    "name": "inNotificationPhase"
+  },
+  {
     "name": "includeViewProviders"
   },
   {
@@ -1533,6 +1569,15 @@
     "name": "innerFrom"
   },
   {
+    "name": "input"
+  },
+  {
+    "name": "inputFunction"
+  },
+  {
+    "name": "inputRequiredFunction"
+  },
+  {
     "name": "insertBloom"
   },
   {
@@ -1551,6 +1596,12 @@
     "name": "invokeHostBindingsInCreationMode"
   },
   {
+    "name": "isAngularZoneProperty"
+  },
+  {
+    "name": "isApplicationBootstrapConfig"
+  },
+  {
     "name": "isArrayLike"
   },
   {
@@ -1564,6 +1615,9 @@
   },
   {
     "name": "isComponentHost"
+  },
+  {
+    "name": "isConsumerNode"
   },
   {
     "name": "isContentQueryHost"
@@ -1779,7 +1833,7 @@
     "name": "ngOnChangesSetInput"
   },
   {
-    "name": "ngZoneApplicationErrorHandlerFactory"
+    "name": "ngZoneInstanceId"
   },
   {
     "name": "noMatch"
@@ -1849,6 +1903,15 @@
   },
   {
     "name": "processInjectorTypesWithProviders"
+  },
+  {
+    "name": "producerAccessed"
+  },
+  {
+    "name": "producerAddLiveConsumer"
+  },
+  {
+    "name": "producerNotifyConsumers"
   },
   {
     "name": "producerRemoveLiveConsumerAtIndex"
@@ -2065,6 +2128,9 @@
   },
   {
     "name": "throwIfEmpty"
+  },
+  {
+    "name": "throwInvalidWriteToSignalErrorFn"
   },
   {
     "name": "throwProviderNotFoundError"

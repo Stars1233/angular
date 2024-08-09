@@ -711,21 +711,6 @@ function nativeAppendOrInsertBefore(
   }
 }
 
-/** Removes a node from the DOM given its native parent. */
-function nativeRemoveChild(
-  renderer: Renderer,
-  parent: RElement,
-  child: RNode,
-  isHostElement?: boolean,
-): void {
-  renderer.removeChild(parent, child, isHostElement);
-}
-
-/** Checks if an element is a `<template>` node. */
-function isTemplateNode(node: RElement): node is RTemplate {
-  return node.tagName === 'TEMPLATE' && (node as RTemplate).content !== undefined;
-}
-
 /**
  * Returns a native parent of a given native node.
  */
@@ -864,7 +849,11 @@ export function getFirstNativeNode(lView: LView, tNode: TNode | null): RNode | n
     ngDevMode &&
       assertTNodeType(
         tNode,
-        TNodeType.AnyRNode | TNodeType.AnyContainer | TNodeType.Icu | TNodeType.Projection,
+        TNodeType.AnyRNode |
+          TNodeType.AnyContainer |
+          TNodeType.Icu |
+          TNodeType.Projection |
+          TNodeType.LetDeclaration,
       );
 
     const tNodeType = tNode.type;
@@ -884,6 +873,8 @@ export function getFirstNativeNode(lView: LView, tNode: TNode | null): RNode | n
           return unwrapRNode(rNodeOrLContainer);
         }
       }
+    } else if (tNodeType & TNodeType.LetDeclaration) {
+      return getFirstNativeNode(lView, tNode.next);
     } else if (tNodeType & TNodeType.Icu) {
       let nextRNode = icuContainerIterate(tNode as TIcuContainerNode, lView);
       let rNode: RNode | null = nextRNode();
@@ -945,10 +936,7 @@ export function getBeforeNodeForView(
  */
 export function nativeRemoveNode(renderer: Renderer, rNode: RNode, isHostElement?: boolean): void {
   ngDevMode && ngDevMode.rendererRemoveNode++;
-  const nativeParent = nativeParentNode(renderer, rNode);
-  if (nativeParent) {
-    nativeRemoveChild(renderer, nativeParent, rNode, isHostElement);
-  }
+  renderer.removeChild(null, rNode, isHostElement);
 }
 
 /**
